@@ -21,6 +21,7 @@ public:
 		imgplay2 = NULL;
 		inhelp1 = NULL;
 		inhelp2 = NULL;
+		backBtn = NULL;
 		srcR.x = 0;
 		srcR.y = 0;
 		srcR.w = BlockW;
@@ -112,7 +113,7 @@ private:
 
 	SDL_Window* window;
 	SDL_Renderer* render;
-	SDL_Texture* back1, * blocks, * back2, * imgplay1, * imgplay2, * inhelp1, * inhelp2;
+	SDL_Texture* back1, * blocks, * back2, * imgplay1, * imgplay2, * inhelp1, * inhelp2, * backBtn;
 	SDL_Rect srcR, destR;
 
 	bool inback1, running;

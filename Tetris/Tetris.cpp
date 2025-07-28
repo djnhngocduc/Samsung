@@ -68,6 +68,7 @@ bool Tetris::init(const char* name) {
                 imgplay2 = IMG_LoadTexture(render, "img/imgplay2.png");
                 inhelp1 = IMG_LoadTexture(render, "img/help1.png");
                 inhelp2 = IMG_LoadTexture(render, "img/help.jpg");
+                backBtn = IMG_LoadTexture(render, "img/back.png");
                 if (TTF_Init() != 0) {
                     cout << TTF_GetError();
                 }
@@ -208,8 +209,7 @@ void Tetris::handleEvennts() {
 }
 
 void Tetris::ChooseTheme() {
-    SDL_RenderClear(render);
-    SDL_RenderCopy(render, back1, NULL, NULL);
+    bool selecting = true;
 
     textbox txClassic, txNeon, txRetro;
     txClassic.Loadtext("UTM Cookies.ttf", 50);
@@ -217,44 +217,69 @@ void Tetris::ChooseTheme() {
     txRetro.Loadtext("UTM Cookies.ttf", 50);
 
     txClassic.Setcolor(100, 100, 100, 255);
-    txNeon.Setcolor(57, 255, 20, 255); 
-    txRetro.Setcolor(180, 100, 255, 255); 
+    txNeon.Setcolor(57, 255, 20, 255);
+    txRetro.Setcolor(180, 100, 255, 255);
 
     txClassic.Settext("Classic Theme", render);
     txNeon.Settext("Neon Theme", render);
     txRetro.Settext("Retro Theme", render);
 
-    txClassic.Draw(render, 200, 200);
-    txNeon.Draw(render, 200, 300);
-    txRetro.Draw(render, 200, 400);
+    SDL_Rect backRect = { 20, 20, 50, 50 };
 
-    SDL_RenderPresent(render);
+    while (selecting) {
+        SDL_RenderClear(render);
+        SDL_RenderCopy(render, back1, NULL, NULL);
 
-    SDL_Event m;
-    while (SDL_PollEvent(&m)) {
-        switch (m.type) {
+        txClassic.Draw(render, 200, 200);
+        txNeon.Draw(render, 200, 300);
+        txRetro.Draw(render, 200, 400);
+        SDL_RenderCopy(render, backBtn, NULL, &backRect);
+
+        SDL_RenderPresent(render);
+
+        SDL_Event m;
+        while (SDL_PollEvent(&m)) {
+            switch (m.type) {
+            case SDL_QUIT:
+                running = false;
+                selecting = false;
+                break;
+
             case SDL_MOUSEBUTTONDOWN:
                 SDL_GetMouseState(&xpos, &ypos);
+                if (xpos >= 20 && xpos <= 70 && ypos >= 20 && ypos <= 70) {
+                    Setback1(true);
+                    selecting = false;
+                }
+
                 if (xpos >= 200 && xpos <= 200 + 300) {
                     if (ypos >= 200 && ypos <= 250) {
                         currentTheme = CLASSIC;
                         ApplyTheme();
+                        selecting = false;
                     }
                     else if (ypos >= 300 && ypos <= 350) {
                         currentTheme = NEON;
                         ApplyTheme();
+                        selecting = false;
                     }
                     else if (ypos >= 400 && ypos <= 450) {
                         currentTheme = RETRO;
                         ApplyTheme();
+                        selecting = false;
                     }
                 }
                 break;
+            }
         }
+
+        SDL_Delay(10);
     }
 }
 
 void Tetris::ApplyTheme() {
+    Mix_HaltMusic();
+
     if (currentTheme == CLASSIC) {
         back2 = IMG_LoadTexture(render, "img/background_classic.png");
     }
@@ -437,6 +462,7 @@ bool Tetris::TetrisWait() {
 void Tetris::Clean() {
     SDL_DestroyTexture(blocks);
     SDL_DestroyTexture(back2);
+    SDL_DestroyTexture(backBtn);
     SDL_DestroyRenderer(render);
     IMG_Quit();
     SDL_Quit();
