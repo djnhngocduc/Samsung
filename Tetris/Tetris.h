@@ -74,7 +74,6 @@ public:
 	void Gameplay();
 
 	void GameOver();
-	void Endgame();
 	void UpdateRender();
 
 	void Clean();
@@ -85,6 +84,9 @@ public:
 
 	void ChooseTheme();
 	void ApplyTheme();
+
+	void GameOverScreen(bool& goBackToMenu, bool& playAgain);
+	void Reset();
 
 	bool isChoosingTheme() const {
 		return choosingTheme;

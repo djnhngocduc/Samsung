@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
         while (game->Tetrisrunning()) {
             game->setCurrentTime(SDL_GetTicks());
             game->handleEvennts();
+
             if (game->Tetrisback1()) {
                 game->Loadingback1();
             }
@@ -26,7 +27,24 @@ int main(int argc, char* argv[]) {
             }
             game->GameOver();
         }
-        game->Endgame();
+
+        bool goBackToMenu = false;
+        bool playAgain = false;
+        game->GameOverScreen(goBackToMenu, playAgain);
+
+        if (goBackToMenu) {
+            game->Setback1(true);
+        }
+
+        if (playAgain) {
+            game->Setback1(false);
+            if (game->isChoosingTheme()) {
+                game->ChooseTheme();
+            }
+        }
+
+        game->Reset();
+
         SDL_Event e;
         if (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {

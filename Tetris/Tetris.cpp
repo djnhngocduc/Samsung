@@ -237,6 +237,7 @@ void Tetris::ChooseTheme() {
 
         SDL_RenderPresent(render);
 
+
         SDL_Event m;
         while (SDL_PollEvent(&m)) {
             switch (m.type) {
@@ -415,14 +416,6 @@ void Tetris::GameOver() {
     }
 }
 
-void Tetris::Endgame() {
-    SDL_RenderCopy(render, back1, NULL, NULL);
-    txb_gameover.Draw(render, 100, 50);
-    txb1.Draw(render, 200, 150);
-    txb2.Draw(render, 350, 150);
-    SDL_RenderPresent(render);
-}
-
 void Tetris::UpdateRender() {
     if (ispaused == true) return;
     SDL_RenderCopy(render, back2, NULL, NULL);
@@ -497,4 +490,68 @@ void Tetris::SaveHighScore() {
 		}
         file.close();
     }
+}
+
+void Tetris::GameOverScreen(bool& goBackToMenu, bool& playAgain) {
+	textbox txAgain, txBack;
+
+	txAgain.Loadtext("UTM Cookies.ttf", 50);
+	txAgain.Setcolor(255, 255, 255, 255);
+	txAgain.Settext("Again", render);
+
+	txBack.Loadtext("UTM Cookies.ttf", 50);
+	txBack.Setcolor(255, 255, 255, 255);
+	txBack.Settext("Back", render);
+
+	SDL_Rect againRect = { 380, 450, 200, 60 };
+	SDL_Rect backRect = { 100, 450, 200, 60 };
+
+    bool waiting = true;
+    while (waiting) {
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                running = false;
+                break;
+            }
+            if (e.type == SDL_MOUSEBUTTONDOWN) {
+                int mx, my;
+                SDL_GetMouseState(&mx, &my);
+                if (mx >= againRect.x && mx <= againRect.x + againRect.w &&
+                    my >= againRect.y && my <= againRect.y + againRect.h) {
+                    playAgain = true;
+                    waiting = false;
+                }
+                if (mx >= backRect.x && mx <= backRect.x + backRect.w &&
+                    my >= backRect.y && my <= backRect.y + backRect.h) {
+                    goBackToMenu = true;
+                    waiting = false;
+                }
+            }
+        }
+
+        SDL_RenderClear(render);
+        SDL_RenderCopy(render, back1, NULL, NULL);
+        txb_gameover.Draw(render, 100, 50);
+        txb1.Draw(render, 200, 150);
+        txb2.Draw(render, 350, 150); 
+        txAgain.Draw(render, againRect.x, againRect.y);
+        txBack.Draw(render, backRect.x, backRect.y);
+        SDL_RenderPresent(render);
+    }
+}
+
+void Tetris::Reset() {
+    memset(matrix, 0, sizeof(matrix));
+    score = 0;
+    move = 0;
+    rotate = false;
+    delay = 1000;
+    ispaused = false;
+    startTime = 0;
+    Randomblocks();
+
+    string text = to_string(score);
+    txb2.Settext(text, render);
+    running = true;
 }

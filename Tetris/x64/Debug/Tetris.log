@@ -1,2 +1,5 @@
 ﻿  Tetris.cpp
+  main.cpp
+D:\Download\Samsung\Tetris\Tetris\main.cpp(9,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  Generating Code...
   Tetris.vcxproj -> D:\Download\Samsung\Tetris\x64\Debug\Tetris.exe
