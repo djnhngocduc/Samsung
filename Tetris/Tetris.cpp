@@ -69,6 +69,7 @@ bool Tetris::init(const char* name) {
                 inhelp1 = IMG_LoadTexture(render, "img/help1.png");
                 inhelp2 = IMG_LoadTexture(render, "img/help.jpg");
                 backBtn = IMG_LoadTexture(render, "img/back.png");
+
                 if (TTF_Init() != 0) {
                     cout << TTF_GetError();
                 }
@@ -161,23 +162,20 @@ void Tetris::Randomblocks() {
     }
 }
 
-void Tetris::handleEvennts() {
+void Tetris::handleEvents() {
     SDL_Event m;
     while (SDL_PollEvent(&m)) {
         if (running) {
             switch (m.type) {
             case SDL_QUIT:
                 running = false;
+                wait = false;
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 SDL_GetMouseState(&xpos, &ypos);
                 if (450 <= xpos && xpos <= (135 + 450) && 70 <= ypos && ypos <= (70 + 88)) {
                     choosingTheme = true;
                     Setback1(false);
-                    //Sound.Audio_long("sound/background2(Unwelcome_School).wav");
-                    Mix_Music* music = Mix_LoadMUS("sound/background2(Unwelcome_School).wav");
-                    Mix_VolumeMusic(15);
-                    Mix_PlayMusic(music, -1);
                 }
                 break;
             case SDL_KEYDOWN:
@@ -237,12 +235,12 @@ void Tetris::ChooseTheme() {
 
         SDL_RenderPresent(render);
 
-
         SDL_Event m;
         while (SDL_PollEvent(&m)) {
             switch (m.type) {
             case SDL_QUIT:
                 running = false;
+                wait = false;
                 selecting = false;
                 break;
 
@@ -252,7 +250,6 @@ void Tetris::ChooseTheme() {
                     Setback1(true);
                     selecting = false;
                 }
-
                 if (xpos >= 200 && xpos <= 200 + 300) {
                     if (ypos >= 200 && ypos <= 250) {
                         currentTheme = CLASSIC;
@@ -280,6 +277,10 @@ void Tetris::ChooseTheme() {
 
 void Tetris::ApplyTheme() {
     Mix_HaltMusic();
+
+    Mix_Music* music = Mix_LoadMUS("sound/background2(Unwelcome_School).wav");
+    Mix_VolumeMusic(15);
+    Mix_PlayMusic(music, -1);
 
     if (currentTheme == CLASSIC) {
         back2 = IMG_LoadTexture(render, "img/background_classic.png");
@@ -320,6 +321,7 @@ void Tetris::Moveblocks(SDL_Rect& rect, int x, int y) {
 
 
 void Tetris::Gameplay() {
+    gameOver = true;
     // backup
     if (ispaused == true) return;
     for (int i = 0; i < 4; i++) {
@@ -399,17 +401,17 @@ void Tetris::GameOver() {
     }
     if (game_over_count == Lines) {
         string theme;
-        if(currentTheme == CLASSIC) {
-			theme = "Classic";
+        if (currentTheme == CLASSIC) {
+            theme = "Classic";
         }
         else if (currentTheme == NEON) {
-			theme = "Neon";
+            theme = "Neon";
         }
         else if (currentTheme == RETRO) {
-			theme = "Retro";
-		}
+            theme = "Retro";
+        }
         if (score > highScores[theme]) {
-			highScores[theme] = score;
+            highScores[theme] = score;
             SaveHighScore();
         }
         running = false;
@@ -469,75 +471,78 @@ string Tetris::GetExeDir() {
 }
 
 void Tetris::LoadHighScore() {
-	string path = GetExeDir() + "highscore.txt";
+    string path = GetExeDir() + "highscore.txt";
     ifstream file(path);
     string theme;
-	int score;
+    int score;
     if (file.is_open()) {
-        while(file >> theme >> score) {
+        while (file >> theme >> score) {
             highScores[theme] = score;
-		}
-		file.close();
+        }
+        file.close();
     }
 }
 
 void Tetris::SaveHighScore() {
-	string path = GetExeDir() + "highscore.txt";
+    string path = GetExeDir() + "highscore.txt";
     ofstream file(path);
     if (file.is_open()) {
-        for(auto& pair: highScores) {
+        for (auto& pair : highScores) {
             file << pair.first << " " << pair.second << endl;
-		}
+        }
         file.close();
     }
 }
 
 void Tetris::GameOverScreen(bool& goBackToMenu, bool& playAgain) {
-	textbox txAgain, txBack;
+    Mix_HaltMusic();
 
-	txAgain.Loadtext("UTM Cookies.ttf", 50);
-	txAgain.Setcolor(255, 255, 255, 255);
-	txAgain.Settext("Again", render);
+    Mix_Music* music = Mix_LoadMUS("sound/gameover.wav");
+    Mix_VolumeMusic(45);
+    Mix_PlayMusic(music, 0);
 
-	txBack.Loadtext("UTM Cookies.ttf", 50);
-	txBack.Setcolor(255, 255, 255, 255);
-	txBack.Settext("Back", render);
+    textbox txAgain, txBack;
 
-	SDL_Rect againRect = { 380, 450, 200, 60 };
-	SDL_Rect backRect = { 100, 450, 200, 60 };
+    txAgain.Loadtext("UTM Cookies.ttf", 50);
+    txAgain.Setcolor(255, 255, 255, 255);
+    txAgain.Settext("Again", render);
+
+    txBack.Loadtext("UTM Cookies.ttf", 50);
+    txBack.Setcolor(255, 255, 255, 255);
+    txBack.Settext("Back", render);
+
+    SDL_Rect againRect = { 380, 450, 200, 60 }, backRect = { 100, 450, 200, 60 };
 
     bool waiting = true;
     while (waiting) {
+        SDL_RenderClear(render);
+        SDL_RenderCopy(render, back1, NULL, NULL);
+        txb_gameover.Draw(render, 100, 50);
+        txb1.Draw(render, 200, 150);
+        txb2.Draw(render, 350, 150);
+        txAgain.Draw(render, againRect.x, againRect.y);
+        txBack.Draw(render, backRect.x, backRect.y);
+        SDL_RenderPresent(render);
+
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
-                running = false;
-                break;
+                wait = false;
+                waiting = false;
             }
             if (e.type == SDL_MOUSEBUTTONDOWN) {
                 int mx, my;
                 SDL_GetMouseState(&mx, &my);
-                if (mx >= againRect.x && mx <= againRect.x + againRect.w &&
-                    my >= againRect.y && my <= againRect.y + againRect.h) {
+                if (mx >= againRect.x && mx <= againRect.x + againRect.w && my >= againRect.y && my <= againRect.y + againRect.h) {
                     playAgain = true;
                     waiting = false;
                 }
-                if (mx >= backRect.x && mx <= backRect.x + backRect.w &&
-                    my >= backRect.y && my <= backRect.y + backRect.h) {
+                if (mx >= backRect.x && mx <= backRect.x + backRect.w && my >= backRect.y && my <= backRect.y + backRect.h) {
                     goBackToMenu = true;
                     waiting = false;
                 }
             }
         }
-
-        SDL_RenderClear(render);
-        SDL_RenderCopy(render, back1, NULL, NULL);
-        txb_gameover.Draw(render, 100, 50);
-        txb1.Draw(render, 200, 150);
-        txb2.Draw(render, 350, 150); 
-        txAgain.Draw(render, againRect.x, againRect.y);
-        txBack.Draw(render, backRect.x, backRect.y);
-        SDL_RenderPresent(render);
     }
 }
 
@@ -553,5 +558,22 @@ void Tetris::Reset() {
 
     string text = to_string(score);
     txb2.Settext(text, render);
+
+    string theme;
+    if (currentTheme == CLASSIC) {
+        theme = "Classic";
+    }
+    else if (currentTheme == NEON) {
+        theme = "Neon";
+    }
+    else {
+        theme = "Retro";
+    }
+    txb_high2.Settext(to_string(highScores[theme]), render);
     running = true;
+    gameOver = false;
+}
+
+bool Tetris::isGameOver() {
+    return gameOver;
 }

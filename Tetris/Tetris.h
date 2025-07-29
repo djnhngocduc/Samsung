@@ -32,6 +32,7 @@ public:
 		destR.h = BlockH;
 		inback1 = false;
 		running = false;
+		gameOver = false;
 		for (int i = 0; i < Lines; i++) {
 			for (int j = 0; j < Cols; j++) matrix[i][j] = 0;
 		}
@@ -47,11 +48,9 @@ public:
 
 		choosingTheme = false;
 		currentTheme = CLASSIC;
-		highScores = {
-			{"Classic", 0},
-			{"Neon", 0},
-			{"Retro", 0}
-		};
+		highScores["Classic"] = 0;
+		highScores["Neon"] = 0;
+		highScores["Retro"] = 0;
 	}
 
 	~Tetris() {}
@@ -67,7 +66,7 @@ public:
 
 	void Randomblocks();
 
-	void handleEvennts();
+	void handleEvents();
 	void SetPosRect(SDL_Rect& rect, int x = 0, int y = 0, int w = BlockW, int h = BlockH);
 	void Moveblocks(SDL_Rect& rect, int x, int y); // Di chuyen cac khoi block
 
@@ -85,12 +84,14 @@ public:
 	void ChooseTheme();
 	void ApplyTheme();
 
-	void GameOverScreen(bool& goBackToMenu, bool& playAgain);
-	void Reset();
-
 	bool isChoosingTheme() const {
 		return choosingTheme;
 	}
+
+	void GameOverScreen(bool& goBackToMenu, bool& playAgain);
+	void Reset();
+
+	bool isGameOver();
 
 	string GetExeDir();
 
@@ -118,7 +119,7 @@ private:
 	SDL_Texture* back1, * blocks, * back2, * imgplay1, * imgplay2, * inhelp1, * inhelp2, * backBtn;
 	SDL_Rect srcR, destR;
 
-	bool inback1, running;
+	bool inback1, running, gameOver;
 	int matrix[Lines][Cols];
 	static const int shapes[7][4];
 	struct Point {
